@@ -1,5 +1,5 @@
 import os, sys
-import bottle
+from bottle import route, run, static_file, view
 from datetime import datetime as dt
 from random import random
 from horoscope import generate_prophecies
@@ -7,8 +7,8 @@ from horoscope import generate_prophecies
 cwd = os.path.join(os.getcwd(), 'views', 'horoscope.tpl')
 
 
-@bottle.route("/")
-@bottle.view(cwd)
+@route("/")
+@view(cwd)
 def api_hor():
     date = dt.now()
     x = random()
@@ -16,7 +16,7 @@ def api_hor():
         "date" : f"{dt.now().year}-{dt.now().month}-{dt.now().day}"
         }
 
-@bottle.route("/api/forecast")
+@route("/api/forecast")
 def api_forecast():
     prophecies = generate_prophecies(6, 2)
     return {"prophecies" : prophecies}
@@ -25,9 +25,7 @@ def api_forecast():
 # def api_test():
 #     return {"test": True}
 
-bottle.run(
-    host="localhost",
-    port=8080,
-    debug=True,
-    autoreload = True
-)
+if os.environ.get('APP_LOCATION') == 'heroku':
+    run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+else:
+    run(host='localhost', port=8080, debug=True)
